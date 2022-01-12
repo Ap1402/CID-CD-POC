@@ -3,8 +3,6 @@ name: Deploy Backend
 on:
   push:
     branches: [main]
-    paths:
-      - 'back/**'
 
 jobs:
   deploy:
