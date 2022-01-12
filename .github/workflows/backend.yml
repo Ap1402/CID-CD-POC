@@ -8,6 +8,9 @@ on:
 
 jobs:
   deploy:
+  defaults:
+      run:
+        working-directory: back
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
