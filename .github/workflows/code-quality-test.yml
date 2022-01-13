@@ -1,8 +1,6 @@
-name: Testing code quality Backend
+name: Testing code quality Backend on PR
 on:
   workflow_dispatch:
-  push:
-    branches: [dev, main]
   pull_request:
     types: [opened, synchronize, reopened]
 
