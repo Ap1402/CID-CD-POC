@@ -14,7 +14,12 @@ This is a simple POC for a monorepo CI/CD using github actions
 - Every lambda should have its own job? Every lambda should update with a different function name
 - How different environments will work?
 - Production workflow should have protection
-
+#### NOTES:
+- Current stage workflow: 
+    - push to dev -> deployed to dev env
+    - push to main -> deployed first to staging and waits for prod approval
+    - approval prod -> deploys to prod
+ 
 #### TODO:
 
 - Add tests with sonarqube on all actions (it seems that I need a license if I need to integrate it with github actions)
