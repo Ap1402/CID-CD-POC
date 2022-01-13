@@ -37,15 +37,28 @@ jobs:
 
       - name: Zip
         run: (cd dist && zip -r ../function.zip .)
-        
-      - name: Deploy to AWS
-        uses: appleboy/lambda-action@master
+      - name: Upload build to artifac
+        uses: actions/upload-artifact@v2
         with:
-          aws_access_key_id: ${{secrets.AWS_ACCESS_KEY_ID}}
-          aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          aws_region: ${{secrets.AWS_REGION}}
-          function_name: function-test
-          zip_file: function.zip
+          name: function
+          path: back/function.zip
+          
+  DeployDev:
+    defaults:
+      run:
+        working-directory: back
+    name: Deploy to Dev
+    if: github.event.ref == 'refs/heads/dev'
+    needs: [Build]
+    runs-on: ubuntu-latest
+    environment:
+      name: dev
+      url: 'http://staging.url.com'
+    steps:
+      - name: Download Artifac
+        uses: actions/download-artifact@v2
+        with:
+            name: function
 
   DeployStaging:
     name: Deploy to Staging
@@ -56,6 +69,10 @@ jobs:
       name: staging
       url: 'http://staging.url.com'
     steps:
+      - name: Download Artifac
+        uses: actions/download-artifact@v2
+        with:
+            name: function
       - name: Deploy to AWS
         uses: appleboy/lambda-action@master
         with:
@@ -63,7 +80,7 @@ jobs:
           aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
           aws_region: ${{secrets.AWS_REGION}}
           function_name: function-test
-          zip_file: ./back/function.zip
+          zip_file: function.zip
 
   DeployProd:
     name: Deploy to Production
@@ -81,3 +98,4 @@ jobs:
           aws_region: ${{secrets.AWS_REGION}}
           function_name: function-test
           zip_file: ./back/function.zip
+
