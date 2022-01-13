@@ -17,6 +17,8 @@ This is a simple POC for a monorepo CI/CD using github actions
 
 
 ### File structure:
+ ```yaml
+
         on:
             workflow_dispatch:
             push:
@@ -25,9 +27,11 @@ This is a simple POC for a monorepo CI/CD using github actions
                 - 'back/**'
             tags:
             - 'v*'
-        
+ ```
+ 
  **On** defines when this workflow will trigger. We use Push binded to "main" and "dev" branches to trigger this workflow when something is pushed to this branches. Taking into account that we only want to deploy backend, we add another field called "paths" which will define **if anything was pushed to that folder.**
  
+ ```yaml
     Build:
     defaults:
       run:
@@ -60,6 +64,7 @@ This is a simple POC for a monorepo CI/CD using github actions
         with:
           name: function
           path: back/function.zip
+ ```
           
  Build it's a job that we can reuse in order to create the build that we need to deploy on any stage. It is important to mention that the step called "name: Upload build to artifact" it's essential for sharing this file with other jobs, we need to upload an artifact and download it on another job.
 **Github does not share any files between jobs, that's why we need to use artifact or cache**
