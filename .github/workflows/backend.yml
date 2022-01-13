@@ -33,7 +33,7 @@ jobs:
 
   DeployDev:
     name: Deploy to Dev AWS
-    if: github.event_name == 'pull_request && github.event.ref == 'refs/heads/dev'
+    if: github.event_name == 'pull_request || github.event.ref == 'refs/heads/dev'
     needs: [Build]
     runs-on: ubuntu-latest
     environment:
