@@ -57,7 +57,7 @@ jobs:
           aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
           aws_region: ${{secrets.AWS_REGION}}
           function_name: function-test
-          zip_file: function.zip
+          zip_file: ./back/function.zip
 
   DeployStaging:
     name: Deploy to Staging
