@@ -13,8 +13,9 @@ jobs:
   Build:
     defaults:
       run:
-        working-directory: back
+        working-directory: front
     runs-on: ubuntu-latest
+    steps:
     - name: Checkout Code
       uses: actions/checkout@v2
 
