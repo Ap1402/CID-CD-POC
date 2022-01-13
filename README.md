@@ -13,6 +13,7 @@ This is a simple POC for a monorepo CI/CD using github actions
 - How do I know if a lambda was updated?
 - Every lambda should have its own job? Every lambda should update with a different function name
 - How different environments will work?
+- Production workflow should have protection
 
 #### TODO:
 
