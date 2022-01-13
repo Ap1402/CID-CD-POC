@@ -3,7 +3,7 @@ name: Deploy Backend
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - 'back/**'
     tags:
@@ -16,29 +16,29 @@ jobs:
         working-directory: front
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-    - name: Install Dependencies
-      run: yarn
+      - name: Install Dependencies
+        run: yarn
 
-    - name: Build
-      run: yarn build
+      - name: Build
+        run: yarn build
 
-    - name: Move node_modules to dist
-      run: mv node_modules dist/node_modules
+      - name: Move node_modules to dist
+        run: mv node_modules dist/node_modules
 
-    - name: Zip
-      run: (cd dist && zip -r ../function.zip .)
+      - name: Zip
+        run: (cd dist && zip -r ../function.zip .)
 
   DeployDev:
     name: Deploy to Dev AWS
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request && github.event.ref == 'refs/heads/dev'
     needs: [Build]
     runs-on: ubuntu-latest
     environment:
       name: dev
-      url: 'http://dev.myapp.com'
+      url: 'http://dev.url.com'
     steps:
       - name: Deploy to AWS
         uses: appleboy/lambda-action@master
@@ -56,10 +56,16 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: staging
-      url: 'http://test.myapp.com'
+      url: 'http://staging.url.com'
     steps:
-      - name: Deploy
-        run: echo I am deploying!
+      - name: Deploy to AWS
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws_region: ${{secrets.AWS_REGION}}
+          function_name: function-test
+          zip_file: ./back/function.zip
 
   DeployProd:
     name: Deploy to Production
@@ -67,7 +73,13 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: prod
-      url: 'http://www.myapp.com'
+      url: 'http://prod.url.com'
     steps:
-      - name: Deploy
-        run: echo I am deploying!
+      - name: Deploy to AWS
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws_region: ${{secrets.AWS_REGION}}
+          function_name: function-test
+          zip_file: ./back/function.zip
