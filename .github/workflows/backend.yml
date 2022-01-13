@@ -44,6 +44,9 @@ jobs:
           path: function.zip
           
   DeployDev:
+    defaults:
+      run:
+        working-directory: back
     name: Deploy to Dev
     if: github.event.ref == 'refs/heads/dev'
     needs: [Build]
