@@ -5,7 +5,9 @@ on:
     branches: [main]
     paths:
       - 'front/**'
-
+    tags:
+      - 'v*'
+      
 jobs:
   build:
     defaults:
