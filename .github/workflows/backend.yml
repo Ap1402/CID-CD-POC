@@ -59,14 +59,6 @@ jobs:
         uses: actions/download-artifact@v2
         with:
             name: function
-      - name: Deploy to AWS
-        uses: appleboy/lambda-action@master
-        with:
-          aws_access_key_id: ${{secrets.AWS_ACCESS_KEY_ID}}
-          aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          aws_region: ${{secrets.AWS_REGION}}
-          function_name: function-test
-          zip_file: function.zip
 
   DeployStaging:
     name: Deploy to Staging
