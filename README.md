@@ -19,6 +19,9 @@ This is a simple POC for a monorepo CI/CD using github actions
     - push to dev -> deployed to dev env
     - push to main -> deployed first to staging and waits for prod approval
     - approval prod -> deploys to prod
+
+  ![image](https://user-images.githubusercontent.com/37101632/149381077-882be50c-c75d-42c3-b0e5-0f48df2d4379.png)
+
  
 #### TODO:
 
