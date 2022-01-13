@@ -2,8 +2,8 @@ name: Deploy Front
 on:
   push:
     branches: [main]
-  paths:
-    - 'front/**'
+    paths:
+      - 'front/**'
 
 jobs:
   build:
