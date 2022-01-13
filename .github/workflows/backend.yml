@@ -41,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: function
-          path: function.zip
+          path: ../function.zip
           
   DeployDev:
     defaults:
