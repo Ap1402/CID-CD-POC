@@ -13,7 +13,7 @@ jobs:
   Build:
     defaults:
       run:
-        working-directory: front
+        working-directory: back
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
