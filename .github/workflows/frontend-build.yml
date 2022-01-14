@@ -1,0 +1,33 @@
+name: Build Frontend
+on:
+  workflow_call:
+
+jobs:
+  build:
+    defaults:
+      run:
+        working-directory: front
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@master
+
+      - name: Cache node modules
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-build-
+            ${{ runner.OS }}-
+      - name: Install
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload build to artifac
+        uses: actions/upload-artifact@v2
+        with:
+          name: front
+          path: front/dist
