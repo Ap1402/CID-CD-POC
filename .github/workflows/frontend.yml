@@ -10,7 +10,7 @@ on:
 
 jobs:
   Build:
-    uses: ap1402/CID-CD-POC/.github/workflows/backend-build.yml@dev
+    uses: ap1402/CID-CD-POC/.github/workflows/frontend-build.yml@dev
 
   DeployDev:
     name: Deploy to Dev
