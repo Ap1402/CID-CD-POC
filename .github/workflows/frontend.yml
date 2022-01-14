@@ -30,4 +30,4 @@ jobs:
           aws s3 cp \
             --recursive \
             --region us-east-2 \
-            dist s3://angular-bucket-poc
+            dist/front-poc s3://angular-bucket-poc
