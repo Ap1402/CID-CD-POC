@@ -11,7 +11,7 @@ on:
 
 jobs:
   Build:
-    uses: Ap1402/CID-CD-POC/tree/main/.github/workflows/backend-build.yml@dev
+    uses: ap1402/CID-CD-POC/.github/workflows/backend-build.yml@dev
 
   DeployDev:
     defaults:
