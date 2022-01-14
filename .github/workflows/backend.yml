@@ -11,38 +11,8 @@ on:
 
 jobs:
   Build:
-    defaults:
-      run:
-        working-directory: back
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
-      - name: Cache node modules
-        uses: actions/cache@v1
-        with:
-          path: node_modules
-          key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-build-
-            ${{ runner.OS }}-
-      - name: Install Dependencies
-        run: yarn
+    uses: Ap1402/CID-CD-POC/tree/main/.github/workflows/backend-build.yml@dev
 
-      - name: Build
-        run: yarn build
-
-      - name: Move node_modules to dist
-        run: mv node_modules dist/node_modules
-
-      - name: Zip
-        run: (cd dist && zip -r ../function.zip .)
-      - name: Upload build to artifac
-        uses: actions/upload-artifact@v2
-        with:
-          name: function
-          path: back/function.zip
-          
   DeployDev:
     defaults:
       run:
@@ -58,7 +28,7 @@ jobs:
       - name: Download Artifac
         uses: actions/download-artifact@v2
         with:
-            name: function
+          name: function
 
   DeployStaging:
     name: Deploy to Staging
@@ -72,7 +42,7 @@ jobs:
       - name: Download Artifac
         uses: actions/download-artifact@v2
         with:
-            name: function
+          name: function
       - name: Deploy to AWS
         uses: appleboy/lambda-action@master
         with:
@@ -98,4 +68,3 @@ jobs:
           aws_region: ${{secrets.AWS_REGION}}
           function_name: function-test
           zip_file: ./back/function.zip
-
