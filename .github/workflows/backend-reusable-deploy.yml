@@ -1,0 +1,71 @@
+name: Deploy backend reusable deploy test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, dev, staging]
+    paths:
+      - 'back/**'
+    tags:
+      - 'v*'
+
+jobs:
+  Build:
+    uses: ap1402/CID-CD-POC/.github/workflows/backend-build.yml@dev
+
+  DeployDev:
+    name: Deploy to Dev
+    if: github.event.ref == 'refs/heads/dev'
+    needs: [Build]
+    runs-on: ubuntu-latest
+    environment:
+      name: dev
+      url: 'http://staging.url.com'
+    steps:
+      - name: Download Artifac
+        uses: actions/download-artifact@v2
+        with:
+          name: function
+      - name: Deploy dev
+        uses: ap1402/CID-CD-POC/.github/workflows/Reusable-deploy-lambda.yml@dev
+
+
+  DeployStaging:
+    name: Deploy to Staging
+    if: github.event.ref == 'refs/heads/staging'
+    needs: [Build]
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: 'http://staging.url.com'
+    steps:
+      - name: Download Artifac
+        uses: actions/download-artifact@v2
+        with:
+          name: function
+      - name: Deploy to AWS
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws_region: ${{secrets.AWS_REGION}}
+          function_name: function-test
+          zip_file: function.zip
+
+  DeployProd:
+    name: Deploy to Production
+    if: github.event.ref == 'refs/heads/main'
+    needs: [Build]
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+      url: 'http://prod.url.com'
+    steps:
+      - name: Deploy to AWS
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws_region: ${{secrets.AWS_REGION}}
+          function_name: function-test
+          zip_file: function.zip
