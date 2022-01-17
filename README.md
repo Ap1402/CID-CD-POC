@@ -195,6 +195,7 @@ Luego emplearemos el uso de download-artifact para usar el archivo en otro job.
 ```yaml
 name: Build Frontend
 on:
+ # Declaramos que este workflow puede ser accionado desde otro workflow
   workflow_call:
 
 jobs:
@@ -220,7 +221,7 @@ jobs:
 
       - name: Build
         run: npm run build
-
+    # Subimos la carpeta ubicada en front/dist como artifact con el nombre de front para que el workflow que llegue a llamar a build pueda descargarlo
       - name: Upload build to artifac
         uses: actions/upload-artifact@v2
         with:
@@ -231,9 +232,11 @@ jobs:
 #### Front deployment
 ```yaml
 name: Deploy Front
-on:
+on: 
+# Declaramos que este workflow puede ser accionado  desde la interfaz de github
   workflow_dispatch:
   push:
+  # Declaramos que este workflow puede ser accionado con algun push que haga un cambio en la carpeta "front" en las branches main, staging y dev
     branches: [main, staging, dev]
     paths:
       - 'front/**'
@@ -248,6 +251,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [Build]
     steps:
+    # Descargamos el artifact llamado front y lo guardamos en una carpeta llamada dist
       - name: Download Artifac
         uses: actions/download-artifact@v2
         with:
