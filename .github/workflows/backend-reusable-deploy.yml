@@ -10,12 +10,16 @@ on:
       - 'v*'
 
 jobs:
+  Loggin:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
   Build:
     uses: ap1402/CID-CD-POC/.github/workflows/backend-build.yml@dev
 
   Deploy:
-    needs: [Build]
     uses: ap1402/CID-CD-POC/.github/workflows/Reusable-deploy-lambda.yml@dev
+    needs: [Build]
     with:
       functionName: function-test
       functionZipName: function.zip
