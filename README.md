@@ -1,6 +1,6 @@
 # CID/CD POC
 
-Una prueba de concepto de CI / CD realizada con github actions.
+Una prueba de concepto de CI / CD de un monorepo realizada con github actions.
 
 #### Consideraciones:
 - Las versiones serán realizadas con la siguiente nomenclatura "V1.xx.xx" o "v1.xx.xx-backend" (Aunque la primera está bien, la segunda es innecesaria si se manejan los path)
@@ -10,7 +10,7 @@ Una prueba de concepto de CI / CD realizada con github actions.
 - Producción tal vez deberia tener protección 
 
 
-## ¿Cómo se vincula el on a ciertos eventos?
+## ¿Cómo se vincula el workflow a ciertos eventos?
 Mediante el field "On" es posible vincular a ciertos eventos, estos eventos pueden ser push, pull requests o nuevos tags.
  ```yaml
 
@@ -83,43 +83,39 @@ jobs:
  Especial atención a que invocamos el workflow reusable con la dirección del repositorio y el username de la cuenta de github antes.
 
 
+### ¿Cómo hacer jobs condicionales?
 
- 
+Se puede emplear el uso de "if" para definir cuáles jobs van a ser ejecutados y cuáles no. Esto serviría por ejemplo, para definir 3 jobs y que según la rama que accione ese workflow, se ejecute el deploy a production, dev o staging.
+
  ```yaml
-    Build:
-    defaults:
-      run:
-        working-directory: back
+jobs:
+  Build:
+    uses: ap1402/CID-CD-POC/.github/workflows/backend-build.yml@dev
+
+  DeployDev:
+    name: Deploy to Dev
+    if: github.event.ref == 'refs/heads/dev'
+    needs: [Build]
     runs-on: ubuntu-latest
+    environment:
+      name: dev
+      url: 'http://staging.url.com'
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
-      - name: Cache node modules
-        uses: actions/cache@v1
-        with:
-          path: node_modules
-          key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-build-
-            ${{ runner.OS }}-
-      - name: Install Dependencies
-        run: yarn
-
-      - name: Build
-        run: yarn build
-
-      - name: Move node_modules to dist
-        run: mv node_modules dist/node_modules
-
-      - name: Zip
-        run: (cd dist && zip -r ../function.zip .)
-      - name: Upload build to artifac
-        uses: actions/upload-artifact@v2
+      - name: Download Artifac
+        uses: actions/download-artifact@v2
         with:
           name: function
-          path: back/function.zip
+ 
  ```
-          
+ Podemos observar que tenemos un job llamado "build", encargado de crear el build de nuestro proyecto. Y un Job llamado "deploydev" que se ejecutará solo si el workflow es llamado desde la branch "dev" 
+ 
+```yaml
+      if: github.event.ref == 'refs/heads/dev'
+      # Deploy en production
+      if: github.event.ref == 'refs/heads/main'
+      # Deploy en staging
+      if: github.event.ref == 'refs/heads/staging'
+```  
 
 #### Flujo de deploy para CI/CD:
    - push a dev -> deploy a dev env
