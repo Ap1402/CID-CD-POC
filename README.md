@@ -83,7 +83,7 @@ jobs:
  Especial atención a que invocamos el workflow reusable con la dirección del repositorio y el username de la cuenta de github antes.
 
 
-### ¿Cómo hacer jobs condicionales?
+## ¿Cómo hacer jobs condicionales?
 
 Se puede emplear el uso de "if" para definir cuáles jobs van a ser ejecutados y cuáles no. Esto serviría por ejemplo, para definir 3 jobs y que según la rama que accione ese workflow, se ejecute el deploy a production, dev o staging.
 
@@ -117,11 +117,11 @@ jobs:
       if: github.event.ref == 'refs/heads/staging'
 ```  
 
-#### Flujo de deploy para CI/CD:
+## Flujo de deploy para CI/CD:
    - push a dev -> deploy a dev env
    - push a staging -> deploy a staging env
    - push a main -> deploy a production env
 
-#### TODO:
+## TODO:
 
 - Agregar tests de codigo en pull request con sonarquobe (parece que necesita una licencia para ser integrado con github actions), por los momentos lo agregué con sonarcloud que tiene una licencia abierta.
