@@ -7,31 +7,22 @@ on:
       - 'front/**'
     tags:
       - 'v*'
-      
+
 jobs:
-  build:
-    defaults:
-      run:
-        working-directory: front
+  Build:
+    uses: ap1402/CID-CD-POC/.github/workflows/frontend-build.yml@dev
+
+  DeployDev:
+    name: Deploy to Dev
+    if: github.event.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
+    needs: [Build]
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@master
-
-      - name: Cache node modules
-        uses: actions/cache@v1
+      - name: Download Artifac
+        uses: actions/download-artifact@v2
         with:
-          path: node_modules
-          key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-build-
-            ${{ runner.OS }}-
-      - name: Install
-        run: npm install
-
-      - name: Build
-        run: npm run build
-
+          name: front
+          path: dist
       - name: Deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -40,4 +31,47 @@ jobs:
           aws s3 cp \
             --recursive \
             --region us-east-2 \
-            dist s3://angular-bucket-poc
+            dist/front-poc s3://angular-bucket-poc
+
+  DeployStaging:
+    name: Deploy to Staging
+    if: github.event.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    needs: [Build]
+    steps:
+      - name: Download Artifac
+        uses: actions/download-artifact@v2
+        with:
+          name: front
+          path: dist
+      - name: Deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws s3 cp \
+            --recursive \
+            --region us-east-2 \
+            dist/front-poc s3://angular-bucket-poc
+
+
+  DeployProd:
+    name: Deploy to Prod
+    if: github.event.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: [Build]
+    steps:
+      - name: Download Artifac
+        uses: actions/download-artifact@v2
+        with:
+          name: front
+          path: dist
+      - name: Deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws s3 cp \
+            --recursive \
+            --region us-east-2 \
+            dist/front-poc s3://angular-bucket-poc       
