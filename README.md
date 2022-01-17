@@ -116,6 +116,69 @@ jobs:
       # Deploy en staging
       if: github.event.ref == 'refs/heads/staging'
 ```  
+## Con respecto a compartir archivos entre Jobs
+Se pueden compartir archivos fácilmente entre steps dentro de un job, pero al momento de compartir archivos entre jobs **dentro del mismo workflow**, se requiere hacer un paso adicional. No se pueden compartir archivos entre workflows.\
+
+Veamos el siguiente ejemplo:
+
+```yaml
+name: Build Frontend
+on:
+  workflow_call:
+
+jobs:
+  build:
+    defaults:
+      run:
+        working-directory: front
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@master
+
+      - name: Cache node modules
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-build-
+            ${{ runner.OS }}-
+      - name: Install
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload build to artifac
+        uses: actions/upload-artifact@v2
+        with:
+          name: front
+          path: front/dist
+
+
+```
+
+Se puede observar que como último paso se empleó el siguiente step: 
+
+```yaml
+      - name: Upload build to artifac
+        uses: actions/upload-artifact@v2
+        with:
+          name: front
+          path: front/dist
+```
+**Path es la carpeta que deseamos compartir***, este nos permite intercambiar archivos entre jobs dentro de un workflows. Emplearemos primero upload-artifact para subir el artifact.\
+Luego emplearemos el uso de download-artifact para usar el archivo en otro job.
+
+```yaml
+ - name: Download Artifac
+        uses: actions/download-artifact@v2
+        with:
+          name: front
+          path: dist
+```
+**Path** en este caso es la carpeta en la que se va a descargar el archivo.
 
 ## Flujo de deploy para CI/CD:
    - push a dev -> deploy a dev env
@@ -125,3 +188,122 @@ jobs:
 ## TODO:
 
 - Agregar tests de codigo en pull request con sonarquobe (parece que necesita una licencia para ser integrado con github actions), por los momentos lo agregué con sonarcloud que tiene una licencia abierta.
+
+## Ejemplos:
+
+#### Front build reusable
+```yaml
+name: Build Frontend
+on:
+  workflow_call:
+
+jobs:
+  build:
+    defaults:
+      run:
+        working-directory: front
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@master
+
+      - name: Cache node modules
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-build-
+            ${{ runner.OS }}-
+      - name: Install
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload build to artifac
+        uses: actions/upload-artifact@v2
+        with:
+          name: front
+          path: front/dist
+```
+
+#### Front deployment
+```yaml
+name: Deploy Front
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, staging, dev]
+    paths:
+      - 'front/**'
+
+jobs:
+  Build:
+    uses: ap1402/CID-CD-POC/.github/workflows/frontend-build.yml@dev
+
+  DeployDev:
+    name: Deploy to Dev
+    if: github.event.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    needs: [Build]
+    steps:
+      - name: Download Artifac
+        uses: actions/download-artifact@v2
+        with:
+          name: front
+          path: dist
+      - name: Deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws s3 cp \
+            --recursive \
+            --region us-east-2 \
+            dist/front-poc s3://angular-bucket-poc
+
+  DeployStaging:
+    name: Deploy to Staging
+    if: github.event.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    needs: [Build]
+    steps:
+      - name: Download Artifac
+        uses: actions/download-artifact@v2
+        with:
+          name: front
+          path: dist
+      - name: Deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws s3 cp \
+            --recursive \
+            --region us-east-2 \
+            dist/front-poc s3://angular-bucket-poc
+
+
+  DeployProd:
+    name: Deploy to Prod
+    if: github.event.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: [Build]
+    steps:
+      - name: Download Artifac
+        uses: actions/download-artifact@v2
+        with:
+          name: front
+          path: dist
+      - name: Deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws s3 cp \
+            --recursive \
+            --region us-east-2 \
+            dist/front-poc s3://angular-bucket-poc       
+
+```
