@@ -17,8 +17,9 @@ jobs:
     needs: [Build]
     uses: ap1402/CID-CD-POC/.github/workflows/Reusable-deploy-lambda.yml@dev
     with:
+      functionName: function-test
+      functionZipName: function.zip
+    secrets:
       aws_access_key_id: ${{secrets.AWS_ACCESS_KEY_ID}}
       aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
       aws_region: ${{secrets.AWS_REGION}}
-      functionName: function-test
-      functionZipName: function.zip
