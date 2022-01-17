@@ -29,8 +29,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: function
-      - name: echo
-        run: echo "hola"
+      - name: ls
+        run: ls
+      - name: inputs
+        run: echo "${{inputs.functionName}} and ${{inputs.functionZipName}}"
       - name: Deploy to AWS
         uses: appleboy/lambda-action@master
         with:
