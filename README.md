@@ -247,8 +247,10 @@ jobs:
 
   DeployDev:
     name: Deploy to Dev
+    # Solo se ejecturá si la branch que lo acciona es dev
     if: github.event.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
+    # Declaramos que este job es dependiente de Build y que debe esperar a que esté completado
     needs: [Build]
     steps:
     # Descargamos el artifact llamado front y lo guardamos en una carpeta llamada dist
