@@ -1,22 +1,17 @@
 # CID/CD POC
 
-This is a simple POC for a monorepo CI/CD using github actions
+Una prueba de concepto de CI / CD realizada con github actions.
+
+#### Consideraciones:
+- Las versiones serán realizadas con la siguiente nomenclatura "V1.xx.xx" o "v1.xx.xx-backend" (Aunque la primera está bien, la segunda es innecesaria si se manejan los path)
+- Tomar en cuenta si para deployar en main se hará al recibir un push o si solo se hará deploy al crear una nueva versión
+- Front y back deben tener diferentes workflows
+- Front debe deployar a  S3 y limpiar la carpeta antes de updatear el nuevo release
+- Producción tal vez deberia tener protección 
 
 
-#### Considerations:
-
-- Versioning will be made with “v1.xx.xx” or "v1.xx.xx-backend/frontend", etc. 
-- On needs to be hooked to version tags for new releases
-- Front and back should have different workflows
-- Back should deploy to lambda functions
-- Front should deploy to S3 and clean the previous folder before uploading the new release
-- How do I know if a lambda was updated?
-- Every lambda should have its own job? Every lambda should update with a different function name
-- How different environments will work?
-- Production workflow should have protection
-
-
-### File structure:
+## ¿Cómo se vincula el on a ciertos eventos?
+Mediante el field "On" es posible vincular a ciertos eventos, estos eventos pueden ser push, pull requests o nuevos tags.
  ```yaml
 
         on:
@@ -29,7 +24,66 @@ This is a simple POC for a monorepo CI/CD using github actions
             - 'v*'
  ```
  
- **On** defines when this workflow will trigger. We use Push binded to "main" and "dev" branches to trigger this workflow when something is pushed to this branches. Taking into account that we only want to deploy backend, we add another field called "paths" which will define **if anything was pushed to that folder.**
+ - Tomar en cuenta que si vinculas el On con tags, se disparará en la creación de cualquier tag (si disparas el tag desde dev, se creará en base a dev)
+ - Paths es importante, ya que de eso dependerá de si se activa el workflow para front o back, el workflow de front irá vinculado a front y así de igual manera con back.
+ - **workflow_dispatch** nos permite accionar el workflow desde la interfaz de github, esto es util en caso de que llegue a fallar un deploy.
+
+## ¿Cómo reutilizar Workflows?
+Para poder llamar workFlows desde otro workflow se debe usar on: workflow_call
+ ```yaml
+on:
+  workflow_call:
+ ```
+ 
+ Para reusar un workflow desde otro workflow debe cumplirse alguna de estas condiciones:
+ - Ambos workflow deben estar en el mismo repositorio
+ - El workflow a reusar está en un repositorio público
+ 
+ También hay que tomar en cuenta lo siguiente:
+ - Los workflows reusables no pueden llamar a otros workflows reusables.
+ - Los workflows en repositorios privados solo pueden usar otros workflows en el mismo repositorio (como se nombró anteriormente)
+ - Cualquier variable ENV no son enviadas al workflow reusable, para esto se utilizará otro método que veremos más adelante.
+
+Podemos declarar que el workflow recibirá ciertos argumentos de la siguiente manera, prestar atención a como en Jobs se utiliza el **${{inputs.username}}** y **${{secrets.token}}**:
+ ```yaml
+on:
+  workflow_call:
+      inputs:
+      username:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+        
+jobs:
+  example_job:
+    name: Pass input and secrets to my-action
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/my-action@v1
+        with:
+          username: ${{ inputs.username }}
+          token: ${{ secrets.token }}
+ ```
+
+Y para enviarle los argumentos, al momento de reutilizar el workflow se hace de la siguiente forma:
+
+ ```yaml
+jobs:
+  call-workflow-passing-data:
+    uses: octo-org/example-repo/.github/workflows/reusable-workflow.yml@main
+    with:
+      username: mona
+    secrets:
+      token: ${{ secrets.token }}
+ 
+ ```
+ 
+ Especial atención a que invocamos el workflow reusable con la dirección del repositorio y el username de la cuenta de github antes.
+
+
+
  
  ```yaml
     Build:
@@ -66,19 +120,12 @@ This is a simple POC for a monorepo CI/CD using github actions
           path: back/function.zip
  ```
           
- Build it's a job that we can reuse in order to create the build that we need to deploy on any stage. It is important to mention that the step called "name: Upload build to artifact" it's essential for sharing this file with other jobs, we need to upload an artifact and download it on another job.
-**Github does not share any files between jobs, that's why we need to use artifact or cache**
 
-#### NOTES:
-- Current stage workflow: 
-    - push to dev -> deployed to dev env
-    - push to main -> deployed first to staging and waits for prod approval
-    - approval prod -> deploys to prod
+#### Flujo de deploy para CI/CD:
+   - push a dev -> deploy a dev env
+   - push a staging -> deploy a staging env
+   - push a main -> deploy a production env
 
-  ![image](https://user-images.githubusercontent.com/37101632/149381077-882be50c-c75d-42c3-b0e5-0f48df2d4379.png)
-
- 
 #### TODO:
 
-- Add tests with sonarqube on all actions (it seems that I need a license if I need to integrate it with github actions)
-- Do more research to find if there is a way to loop throught lambda folders for deploying
+- Agregar tests de codigo en pull request con sonarquobe (parece que necesita una licencia para ser integrado con github actions), por los momentos lo agregué con sonarcloud que tiene una licencia abierta.
