@@ -37,7 +37,7 @@ jobs:
         with:
           aws_access_key_id: ${{secrets.aws_access_key_id}}
           aws_secret_access_key: ${{secrets.aws_secret_access_key}}
-          aws_secret_access_key: ${{secrets.aws_secret_access_key}}
+          aws_region: ${{secrets.aws_region}}
           function_name: ${{inputs.functionName}}
           zip_file: ${{inputs.functionZipName}}
 
@@ -59,7 +59,7 @@ jobs:
         with:
           aws_access_key_id: ${{secrets.aws_access_key_id}}
           aws_secret_access_key: ${{secrets.aws_secret_access_key}}
-          aws_secret_access_key: ${{secrets.aws_secret_access_key}}
+          aws_region: ${{secrets.aws_region}}
           function_name: ${{inputs.functionName}}
           zip_file: ${{inputs.functionZipName}}
 
@@ -77,6 +77,6 @@ jobs:
         with:
           aws_access_key_id: ${{secrets.aws_access_key_id}}
           aws_secret_access_key: ${{secrets.aws_secret_access_key}}
-          aws_secret_access_key: ${{secrets.aws_secret_access_key}}
+          aws_region: ${{secrets.aws_region}}
           function_name: ${{inputs.functionName}}
           zip_file: ${{inputs.functionZipName}}
