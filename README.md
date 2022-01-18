@@ -313,3 +313,88 @@ jobs:
             dist/front-poc s3://angular-bucket-poc       
 
 ```
+
+
+### Workflow reusable para deployar lambda
+Asignamos nombre de funcion, zipname y los secretos necesarios para desplegar la lambda
+```yaml
+name: Reusable backend deploy policy
+
+on:
+  workflow_call:
+    inputs:
+      functionName:
+        required: true
+        type: string
+      functionZipName:
+        required: true
+        type: string
+    secrets:
+      aws_access_key_id:
+        required: true
+      aws_secret_access_key:
+        required: true
+      aws_region:
+        required: true
+jobs:
+  DeployDev:
+    name: Deploy to Dev
+    if: github.event.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    environment:
+      name: dev
+      url: 'http://staging.url.com'
+    steps:
+      - name: Download Artifac
+        uses: actions/download-artifact@v2
+        with:
+          name: function
+      - name: Deploy to AWS
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{secrets.aws_access_key_id}}
+          aws_secret_access_key: ${{secrets.aws_secret_access_key}}
+          aws_region: ${{secrets.aws_region}}
+          function_name: ${{inputs.functionName}}
+          zip_file: ${{inputs.functionZipName}}
+
+  DeployStaging:
+    name: Deploy to Staging
+    if: github.event.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: 'http://staging.url.com'
+    steps:
+      - name: Download Artifac
+        uses: actions/download-artifact@v2
+        with:
+          name: function
+      - name: Deploy to AWS
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{secrets.aws_access_key_id}}
+          aws_secret_access_key: ${{secrets.aws_secret_access_key}}
+          aws_region: ${{secrets.aws_region}}
+          function_name: ${{inputs.functionName}}
+          zip_file: ${{inputs.functionZipName}}
+
+  DeployProd:
+    name: Deploy to Production
+    if: github.event.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+      url: 'http://prod.url.com'
+    steps:
+      - name: Deploy to AWS
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{secrets.aws_access_key_id}}
+          aws_secret_access_key: ${{secrets.aws_secret_access_key}}
+          aws_region: ${{secrets.aws_region}}
+          function_name: ${{inputs.functionName}}
+          zip_file: ${{inputs.functionZipName}}
+```
+
+
