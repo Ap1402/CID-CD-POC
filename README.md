@@ -396,5 +396,35 @@ jobs:
           function_name: ${{inputs.functionName}}
           zip_file: ${{inputs.functionZipName}}
 ```
+Para luego llamar al workflow de la siguiente manera:
+```yaml
+name: Deploy backend reusable deploy test
 
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, dev, staging]
+    paths:
+      - 'back/**'
+    tags:
+      - 'v*'
 
+jobs:
+  Loggin:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+  Build:
+    uses: ap1402/CID-CD-POC/.github/workflows/backend-build.yml@dev
+
+  Deploy:
+    uses: ap1402/CID-CD-POC/.github/workflows/Reusable-deploy-lambda.yml@dev
+    needs: [Build]
+    with:
+      functionName: function-test
+      functionZipName: function.zip
+    secrets:
+      aws_access_key_id: ${{secrets.AWS_ACCESS_KEY_ID}}
+      aws_secret_access_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+      aws_region: ${{secrets.AWS_REGION}}
+```
