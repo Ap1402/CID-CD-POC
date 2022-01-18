@@ -410,14 +410,12 @@ on:
       - 'v*'
 
 jobs:
-  Loggin:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
   Build:
+   ## Hacemos uso del workflow reusable Build (este tambien lo podemos parametrizar para reusarlo de manera mas eficiente)
     uses: ap1402/CID-CD-POC/.github/workflows/backend-build.yml@dev
 
   Deploy:
+  ## Esperamos al Job Build y luego reusamos el workflow de lamba deploy con sus respectivos argumentos.
     uses: ap1402/CID-CD-POC/.github/workflows/Reusable-deploy-lambda.yml@dev
     needs: [Build]
     with:
