@@ -1,8 +1,8 @@
-name: Testing code quality Backend on PR
+name: Testing code quality front on PR
 on:
   push:
     paths:
-      - 'back/**'
+      - 'front/**'
 
 jobs:
   sonarcloud:
@@ -15,7 +15,7 @@ jobs:
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
-          projectBaseDir: back
+          projectBaseDir: front
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
